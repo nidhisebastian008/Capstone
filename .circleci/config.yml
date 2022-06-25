@@ -1,0 +1,110 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2.1
+jobs:
+  
+  
+  
+  lint_app:
+    docker:
+      # specify the version you desire here
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+      - image: python:3.7.3-stretch
+      
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+    steps:
+      
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+            # Install hadolint
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+            chmod +x /bin/hadolint 
+            
+            
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+        
+      # run tests!
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            make test
+      # run lints!
+      - run:
+          name: run lint
+          command: |
+            . venv/bin/activate
+            pwd
+            make lint
+      
+  
+  
+  build_image:
+    
+    docker:
+      - image: docker:stable
+    steps:
+      - checkout
+      - run:
+         name: install curl
+         command: |
+            apk add --update curl
+      - setup_remote_docker
+      - run:
+         name: build docker image
+         command: |
+            docker build -t nidhiseb/capstone:captsone-${CIRCLE_WORKFLOW_ID:0:7} .
+            docker image ls
+      - run:
+          name: push to dockerhub
+          command: |
+            docker login -u nidhiseb -p Docker@123
+            docker push nidhiseb/capstone:captsone-${CIRCLE_WORKFLOW_ID:0:7}
+            
+  create_cluster:
+    
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - run:
+         name: create eks cluster
+         command: |
+            aws cloudformation deploy \
+            --template-file /capstone-git/.circleci/IAc/eks-cluster.yml \
+            --stack-name "capstone-cluster-${CIRCLE_WORKFLOW_ID:0:7}" \
+#             --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
+
+    
+workflows:
+  defualt:
+    jobs:
+      # - lint_app
+      # - build_image
+      - create_cluster
+      
+  
+          
+          

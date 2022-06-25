@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# This file tags and uploads an image to Docker Hub
+
+# Assumes that an image is built via `run_docker.sh`
+
+# Step 1:
+# Create dockerpath
+# dockerpath=nidhiseb
+
+
+# # Step 2:  
+# # Authenticate & tag
+# docker login -u nidhiseb
+# docker tag mlops $dockerpath:mlops
+# echo "Docker ID and Image: $dockerpath"
+
+# Step 3:
+# Push image to a docker repository
+# docker push $dockerpath
+# docker push $dockerpath:mlops
+docker push nidhiseb/mlops-repo:mlops
+
