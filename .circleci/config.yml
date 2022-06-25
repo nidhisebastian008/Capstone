@@ -89,11 +89,16 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
+    
       - checkout
       - run:
          name: create eks cluster
          command: |
-            ls
+            
+            aws cloudformation deploy \
+            --template-file .circleci/IAc/eks-cluster.yml \
+            --stack-name "capstone-cluster-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --region=us-east-1
 
 #             --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
 
