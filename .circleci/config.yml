@@ -62,7 +62,7 @@ jobs:
       
   
   
-  build_image:
+  build_pushimage:
     
     docker:
       - image: docker:stable
@@ -163,6 +163,8 @@ workflows:
           cluster-name: eks-demo-deployment
           requires:
             - delay
+      - deploy-app-to-cluster:
+          requires: [build_pushimage, create-eks-cluster]
 
     
 # workflows:
