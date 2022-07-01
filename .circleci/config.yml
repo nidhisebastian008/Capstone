@@ -151,24 +151,26 @@ orbs:
   kubernetes: circleci/kubernetes@0.4.0
 
 
-# workflows:
-#   deployment:
-#     jobs:
-#       - create-small-cluster:
-#           cluster-name: eks-demo-deployment
-      
-#       - aws-eks/delete-cluster:
-#           cluster-name: eks-demo-deployment
-#           requires:
-#             - delay
+workflows:
+  deployment:
+    jobs:
+      - create-small-cluster:
+          cluster-name: eks-demo-deployment
+      - delay:
+          requires:
+            - create-small-cluster
+      - aws-eks/delete-cluster:
+          cluster-name: eks-demo-deployment
+          requires:
+            - delay
 
     
-workflows:
-  defualt:
-    jobs:
-      - lint_app
-      # - build_image
-      # - create_cluster
+# workflows:
+#   defualt:
+#     jobs:
+#       # - lint_app
+#       # - build_image
+#       - create_cluster
       
   
           
